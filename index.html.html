@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบทดสอบออนไลน์: หน้าที่พลเมือง ม.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+        .quiz-option:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .quiz-option.correct {
+            background-color: #28a745 !important;
+            color: white !important;
+            border-color: #28a745 !important;
+        }
+        .quiz-option.incorrect {
+            background-color: #dc3545 !important;
+            color: white !important;
+            border-color: #dc3545 !important;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 24px;
+            height: 24px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="quiz-container" class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-6 md:p-8 transition-all duration-500">
+        
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800">แบบทดสอบหน้าที่พลเมือง</h1>
+            <p class="text-center text-gray-600 mt-2">สำหรับนักเรียนชั้นมัธยมศึกษาปีที่ 1</p>
+            
+            <form id="info-form" class="mt-8 space-y-4">
+                <div>
+                    <label for="student-name" class="block mb-2 text-sm font-medium text-gray-900">ชื่อ - สกุล</label>
+                    <input type="text" id="student-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="เช่น เด็กชายรักชาติ ยิ่งชีพ" required>
+                </div>
+                 <div>
+                    <label for="student-class" class="block mb-2 text-sm font-medium text-gray-900">ห้อง</label>
+                    <input type="text" id="student-class" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="เช่น ม.1/1" required>
+                </div>
+                 <div>
+                    <label for="student-number" class="block mb-2 text-sm font-medium text-gray-900">เลขที่</label>
+                    <input type="number" id="student-number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="เช่น 99" required>
+                </div>
+                <div class="flex flex-col items-center pt-4 space-y-4">
+                    <button type="submit" id="start-btn" class="w-full md:w-1/2 bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 text-lg">
+                        เริ่มต้นทำแบบทดสอบ
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-blue-600">คำถามที่ <span id="question-number">1</span> / 30</h2>
+                <div class="text-lg font-bold text-gray-700">คะแนน: <span id="score">0</span></div>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 3.33%"></div>
+            </div>
+            <p id="question-text" class="text-xl md:text-2xl text-gray-800 mb-6 min-h-[100px]"></p>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <div class="mt-8 text-center">
+                 <button id="next-btn" class="bg-gray-700 text-white font-bold py-2 px-8 rounded-lg hover:bg-gray-800 transition-colors duration-300 hidden">คำถามถัดไป</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="hidden text-center">
+            <h2 class="text-3xl font-bold text-gray-800">เสร็จสิ้น!</h2>
+            <div id="student-info-result" class="mt-4 text-gray-600"></div>
+            <p class="text-xl text-gray-600 mt-2">คุณได้คะแนน</p>
+            <p id="final-score" class="text-6xl font-bold text-blue-600 my-4">0</p>
+            <p class="text-xl text-gray-600">จาก 30 คะแนน</p>
+            <p id="result-message" class="text-lg mt-4 font-semibold"></p>
+            <div class="flex flex-col items-center mt-8 space-y-4">
+                <button id="save-score-btn" class="w-full md:w-1/2 bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300 flex items-center justify-center">
+                    <span id="save-btn-text">บันทึกคะแนนลง Google Sheet</span>
+                    <div id="save-loader" class="loader hidden ml-3"></div>
+                </button>
+                <button id="restart-btn" class="w-full md:w-1/2 bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                    กลับไปหน้าแรก
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PASTE YOUR GOOGLE APPS SCRIPT URL HERE
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1wPFoimiZIKgw9WLQKQX-59JPk5un5BeHnKc8Z0NmHau-CLfgLhbgPW3IXeWVpkSm/exec'; 
+
+        const quizData = [
+            { question: "กฎหมายสูงสุดที่ใช้ในการปกครองประเทศไทยคืออะไร", options: ["พระราชบัญญัติ", "พระราชกำหนด", "รัฐธรรมนูญ", "ประมวลกฎหมายแพ่ง"], answer: "รัฐธรรมนูญ" },
+            { question: "อำนาจอธิปไตยซึ่งเป็นอำนาจสูงสุดในการปกครองประเทศ แบ่งออกเป็นกี่ฝ่าย", options: ["2 ฝ่าย", "3 ฝ่าย", "4 ฝ่าย", "5 ฝ่าย"], answer: "3 ฝ่าย" },
+            { question: "ข้อใดคือสถานภาพที่บุคคลได้มาโดยกำเนิด", options: ["นักเรียน", "หัวหน้าห้อง", "เพศชาย", "สมาชิกชมรม"], answer: "เพศชาย" },
+            { question: "วันรัฐธรรมนูญของไทยตรงกับวันที่เท่าไร", options: ["5 ธันวาคม", "10 ธันวาคม", "23 ตุลาคม", "6 เมษายน"], answer: "10 ธันวาคม" },
+            { question: "ตำแหน่งใดทำหน้าที่เป็นหัวหน้าของฝ่ายบริหารในระบอบประชาธิปไตยของไทย", options: ["ประธานรัฐสภา", "ประธานศาลฎีกา", "นายกรัฐมนตรี", "ผู้บัญชาการทหารสูงสุด"], answer: "นายกรัฐมนตรี" },
+            { question: "เหตุผลสำคัญที่สุดที่พลเมืองทุกคนต้องปฏิบัติตามกฎหมายคืออะไร", options: ["เพราะเป็นคำสั่งจากรัฐบาล", "เพื่อให้สังคมเกิดความเป็นระเบียบเรียบร้อยและสงบสุข", "เพื่อหลีกเลี่ยงการถูกตำรวจจับกุม", "เพื่อแสดงให้ผู้อื่นเห็นว่าตนเองเป็นคนดี"], answer: "เพื่อให้สังคมเกิดความเป็นระเบียบเรียบร้อยและสงบสุข" },
+            { question: "ข้อใดอธิบายความหมายของ \"สิทธิ\" ได้ชัดเจนที่สุด", options: ["สิ่งที่ทุกคนในสังคมต้องทำเหมือนกัน", "อำนาจหรือประโยชน์ที่กฎหมายรับรองและคุ้มครองให้แก่บุคคล", "ภาระหน้าที่ที่ทุกคนต้องรับผิดชอบต่อส่วนรวม", "กฎเกณฑ์ที่ใช้ควบคุมความประพฤติของคนในสังคม"], answer: "อำนาจหรือประโยชน์ที่กฎหมายรับรองและคุ้มครองให้แก่บุคคล" },
+            { question: "หัวใจสำคัญที่ทำให้การปกครองระบอบประชาธิปไตยแตกต่างจากระบอบเผด็จการคือข้อใด", options: ["ประชาธิปไตยมีผู้นำคนเดียว แต่เผด็จการมีผู้นำหลายคน", "ประชาธิปไตยให้อำนาจสูงสุดแก่ประชาชน แต่เผด็จการรวมอำนาจไว้ที่ผู้นำ", "ประชาธิปไตยไม่มีกฎหมาย แต่เผด็จการมีกฎหมายที่เข้มงวด", "ประชาธิปไตยเน้นพัฒนาเศรษฐกิจ แต่เผด็จการเน้นการทหาร"], answer: "ประชาธิปไตยให้อำนาจสูงสุดแก่ประชาชน แต่เผด็จการรวมอำนาจไว้ที่ผู้นำ" },
+            { question: "\"จิตสาธารณะ\" มีความสำคัญต่อการพัฒนาชุมชนและสังคมอย่างไร", options: ["ทำให้คนในชุมชนแข่งขันกันทำความดีเพื่อชื่อเสียง", "ทำให้คนในชุมชนมีฐานะร่ำรวยขึ้น", "ทำให้คนในชุมชนตระหนักถึงประโยชน์ส่วนรวมและร่วมมือกันพัฒนา", "ทำให้ชุมชนเป็นที่รู้จักของคนทั่วไป"], answer: "ทำให้คนในชุมชนตระหนักถึงประโยชน์ส่วนรวมและร่วมมือกันพัฒนา" },
+            { question: "การที่คนไทยร่วมกันอนุรักษ์วัฒธรรมและประเพณีอันดีงาม สะท้อนถึงคุณลักษณะใดของพลเมืองดี", options: ["ความเสียสละ", "ความมีระเบียบวินัย", "ความรักชาติและภูมิใจในความเป็นไทย", "ความซื่อสัตย์สุจริต"], answer: "ความรักชาติและภูมิใจในความเป็นไทย" },
+            { question: "หากนักเรียนได้รับเลือกเป็นประธานนักเรียน ควรนำหลักการใดมาปรับใช้ในการทำงานเพื่อส่วนรวมมากที่สุด", options: ["การรับฟังความคิดเห็นของเพื่อนนักเรียนส่วนใหญ่", "การตัดสินใจทุกเรื่องด้วยตนเองเพื่อความรวดเร็ว", "การทำตามนโยบายของประธานนักเรียนคนก่อน", "การมอบหมายงานให้เพื่อนที่สนิทเท่านั้น"], answer: "การรับฟังความคิดเห็นของเพื่อนนักเรียนส่วนใหญ่" },
+            { question: "สถานการณ์ใดแสดงถึงการใช้ \"เสรีภาพในการแสดงความคิดเห็น\" อย่างเหมาะสม", options: ["ตะโกนด่าทอผู้อื่นที่ไม่เห็นด้วยกับตนในที่สาธารณะ", "เขียนบทความวิจารณ์การทำงานของรัฐบาลด้วยข้อมูลที่เป็นจริงและถ้อยคำสุภาพ", "สร้างข่าวปลอมในโซเชียลมีเดียเพื่อโจมตีบุคคลที่ตนไม่ชอบ", "นัดหยุดเรียนเพื่อประท้วงกฎระเบียบของโรงเรียนที่ไม่พอใจ"], answer: "เขียนบทความวิจารณ์การทำงานของรัฐบาลด้วยข้อมูลที่เป็นจริงและถ้อยคำสุภาพ" },
+            { question: "ถ้าเพื่อนในกลุ่มมีความคิดเห็นไม่ตรงกันในการทำรายงาน นักเรียนควรทำอย่างไรเป็นอันดับแรก", options: ["ให้หัวหน้ากลุ่มเป็นคนตัดสินใจเลือกความคิดที่ดีที่สุด", "แยกกลุ่มออกมาทำรายงานคนเดียวเพื่อตัดปัญหา", "เปิดโอกาสให้ทุกคนแสดงเหตุผลและหาข้อสรุปร่วมกัน", "ทำตามความคิดเห็นของเพื่อนที่เรียนเก่งที่สุดในกลุ่ม"], answer: "เปิดโอกาสให้ทุกคนแสดงเหตุผลและหาข้อสรุปร่วมกัน" },
+            { question: "การกระทำใดเป็นการปฏิบัติตนตามบทบาทหน้าที่ของ \"ลูก\" ได้เหมาะสมที่สุด", options: ["ช่วยทำงานบ้านเมื่อมีเวลาว่าง", "ตั้งใจเรียนและเชื่อฟังคำสั่งสอนของพ่อแม่", "หาเงินเลี้ยงดูครอบครัวตั้งแต่อายุยังน้อย", "ถูกทั้งข้อ ก และ ข"], answer: "ถูกทั้งข้อ ก และ ข" },
+            { question: "เมื่อพบเห็นเหตุการณ์ผู้ใหญ่ทำร้ายร่างกายเด็ก นักเรียนควรปฏิบัติตนอย่างไรตามหลักสิทธิเด็ก", options: ["เข้าไปห้ามปรามด้วยตนเองทันที", "ถ่ายคลิปวิดีโอแล้วนำไปเผยแพร่ในโซเชียลมีเดียเพื่อหาคนช่วย", "รีบแจ้งผู้ปกครอง คุณครู หรือโทรศัพท์สายด่วน 1300", "ไม่เข้าไปยุ่งเกี่ยวเพราะเป็นเรื่องในครอบครัวของผู้อื่น"], answer: "รีบแจ้งผู้ปกครอง คุณครู หรือโทรศัพท์สายด่วน 1300" },
+            { question: "ข้อใดคือความสัมพันธ์ระหว่าง \"สิทธิ\" และ \"หน้าที่\" ของพลเมือง", options: ["เป็นสิ่งที่แยกจากกันโดยสิ้นเชิง", "เป็นสิ่งเดียวกัน ไม่มีความแตกต่าง", "การใช้สิทธิของตนต้องไม่ละเมิดสิทธิผู้อื่นและต้องมาพร้อมกับการทำหน้าที่", "พลเมืองมีแต่สิทธิ แต่ไม่มีหน้าที่ที่ต้องรับผิดชอบ"], answer: "การใช้สิทธิของตนต้องไม่ละเมิดสิทธิผู้อื่นและต้องมาพร้อมกับการทำหน้าที่" },
+            { question: "การที่ประชาชนไปใช้สิทธิเลือกตั้ง มีความเชื่อมโยงกับหลักการประชาธิปไตยในเรื่องใดมากที่สุด", options: ["หลักความเสมอภาค", "หลักนิติธรรม", "หลักอำนาจอธิปไตยเป็นของปวงชน", "หลักการใช้เหตุผล"], answer: "หลักอำนาจอธิปไตยเป็นของปวงชน" },
+            { question: "การทิ้งขยะลงในแม่น้ำลำคลอง ส่งผลกระทบต่อส่วนรวมแตกต่างจากการทิ้งขยะในบ้านตนเองอย่างไร", options: ["ไม่แตกต่างกัน เพราะเป็นการสร้างขยะเหมือนกัน", "การทิ้งขยะในบ้านสร้างผลกระทบเฉพาะคนในครอบครัว แต่การทิ้งลงแม่น้ำสร้างผลกระทบต่อคนทั้งสังคม", "การทิ้งขยะลงแม่น้ำเป็นความผิดที่ร้ายแรงกว่าการทิ้งขยะในบ้านเสมอ", "การทิ้งขยะในบ้านเป็นเรื่องส่วนตัว แต่การทิ้งลงแม่น้ำเป็นหน้าที่ของรัฐบาลที่ต้องจัดการ"], answer: "การทิ้งขยะในบ้านสร้างผลกระทบเฉพาะคนในครอบครัว แต่การทิ้งลงแม่น้ำสร้างผลกระทบต่อคนทั้งสังคม" },
+            { question: "ข้อใดเป็นการเปรียบเทียบความเหมือนและความแตกต่างของ \"กฎหมาย\" และ \"ศีลธรรม\" ได้ถูกต้อง", options: ["เหมือนกันคือใช้ควบคุมสังคม ต่างกันที่กฎหมายมีบทลงโทษที่เป็นรูปธรรมชัดเจน", "เหมือนกันคือมีบทลงโทษที่ชัดเจน ต่างกันที่แหล่งที่มาของกฎเกณฑ์", "เหมือนกันคือมาจากหลักศาสนา ต่างกันที่การบังคับใช้กับคนในสังคม", "ไม่มีข้อใดถูก"], answer: "เหมือนกันคือใช้ควบคุมสังคม ต่างกันที่กฎหมายมีบทลงโทษที่เป็นรูปธรรมชัดเจน" },
+            { question: "การกระทำในข้อใดขัดต่อหลักความเสมอภาคตามรัฐธรรมนูญ", options: ["โรงเรียนกำหนดให้นักเรียนชายตัดผมสั้นทรงนักเรียน", "บริษัทปฏิเสธไม่รับคนพิการเข้าทำงาน ทั้งที่เขามีคุณสมบัติครบถ้วน", "ร้านอาหารติดป้าย \"ห้ามนำสัตว์เลี้ยงเข้าร้าน\"", "รัฐบาลให้สิทธิลดหย่อนภาษีแก่ผู้มีรายได้น้อย"], answer: "บริษัทปฏิเสธไม่รับคนพิการเข้าทำงาน ทั้งที่เขามีคุณสมบัติครบถ้วน" },
+            { question: "นโยบายใดของสภานักเรียนที่จะส่งเสริมความเป็นประชาธิปไตยในโรงเรียนได้ดีที่สุด", options: ["นโยบายจัดกิจกรรมกีฬาสีให้ยิ่งใหญ่ที่สุดในอำเภอ", "นโยบายติดตั้งกล้องวงจรปิดทุกห้องเรียนเพื่อจับคนทำผิดกฎ", "นโยบายเปิด \"กล่องรับฟังความคิดเห็น\" เพื่อให้นักเรียนเสนอแนะการพัฒนาโรงเรียน", "นโยบายเพิ่มเวลาพักกลางวันให้นานขึ้นอีก 15 นาที"], answer: "นโยบายเปิด \"กล่องรับฟังความคิดเห็น\" เพื่อให้นักเรียนเสนอแนะการพัฒนาโรงเรียน" },
+            { question: "การแก้ปัญหาความขัดแย้งโดยสันติวิธี มีคุณค่าต่อสังคมอย่างไรมากที่สุด", options: ["ทำให้ผู้ที่แข็งแรงกว่าเป็นฝ่ายชนะเสมอ", "ทำให้ปัญหายืดเยื้อและไม่ได้รับการแก้ไข", "ช่วยลดความรุนแรงและสร้างสังคมที่น่าอยู่", "เป็นวิธีที่แสดงความอ่อนแอของผู้ที่เลือกใช้"], answer: "ช่วยลดความรุนแรงและสร้างสังคมที่น่าอยู่" },
+            { question: "พฤติกรรมใดของนักการเมืองที่แสดงถึงการเป็นพลเมืองดีตามระบอบประชาธิปไตยน้อยที่สุด", options: ["รับฟังปัญหาของประชาชนในพื้นที่ที่ตนเป็นตัวแทน", "ชี้แจงข้อสงสัยของฝ่ายค้านในสภาอย่างมีเหตุผล", "ใช้ตำแหน่งหน้าที่เอื้อประโยชน์ให้แก่พวกพ้องของตน", "ลงพื้นที่ช่วยเหลือผู้ประสบภัยน้ำท่วมอย่างรวดเร็ว"], answer: "ใช้ตำแหน่งหน้าที่เอื้อประโยชน์ให้แก่พวกพ้องของตน" },
+            { question: "การอนุรักษ์สิ่งแวดล้อมโดยวิธีใดจะเกิดความยั่งยืนมากที่สุด", options: ["จัดกิจกรรมเก็บขยะชายหาดปีละครั้ง", "รณรงค์ให้ทุกคนปลูกต้นไม้ในวันสำคัญ", "บริจาคเงินให้หน่วยงานด้านสิ่งแวดล้อม", "สร้างจิตสำนึกและปรับเปลี่ยนพฤติกรรมการใช้ทรัพยากรในชีวิตประจำวัน"], answer: "สร้างจิตสำนึกและปรับเปลี่ยนพฤติกรรมการใช้ทรัพยากรในชีวิตประจำวัน" },
+            { question: "นักเรียนคิดว่าการเป็น \"พลเมืองดี\" กับการเป็น \"คนดี\" มีความสำคัญเหมือนหรือต่างกันอย่างไร", options: ["เหมือนกันทุกประการ", "คนดีคือคนมีศีลธรรม แต่พลเมืองดีคือคนที่ทำตามกฎหมาย ซึ่งอาจไม่ใช่คนดีก็ได้", "พลเมืองดีมีความหมายกว้างกว่า เพราะครอบคลุมทั้งการเป็นคนดีและการทำหน้าที่ต่อสังคม", "ไม่มีความเกี่ยวข้องสัมพันธ์กันเลย"], answer: "พลเมืองดีมีความหมายกว้างกว่า เพราะครอบคลุมทั้งการเป็นคนดีและการทำหน้าที่ต่อสังคม" },
+            { question: "หากนักเรียนต้องการรณรงค์ให้เพื่อนๆ ในโรงเรียนประหยัดพลังงาน ควรออกแบบคำขวัญอย่างไรให้จดจำง่ายและน่าสนใจที่สุด", options: ["\"ปิดไฟ ปิดน้ำ เพื่อโลกของเรา\"", "\"เปิดแอร์ 25 องศา ปิดไฟเมื่อไม่ใช้ ช่วยโลก ช่วยเรา\"", "\"การประหยัดพลังงานคือหน้าที่ของพลเมืองดีทุกคน\"", "\"พลังงานมีคุณค่า โปรดอย่าใช้มันอย่างสิ้นเปลือง\""], answer: "\"เปิดแอร์ 25 องศา ปิดไฟเมื่อไม่ใช้ ช่วยโลก ช่วยเรา\"" },
+            { question: "ถ้าได้รับมอบหมายให้จัดกิจกรรม \"หนึ่งวันเพื่อชุมชน\" นักเรียนจะเสนอโครงการใดที่สร้างประโยชน์ให้ส่วนรวมได้มากที่สุด", options: ["โครงการจัดเลี้ยงอาหารกลางวันผู้สูงอายุในชุมชน", "โครงการทาสีกำแพงโรงเรียนให้สวยงาม", "โครงการพัฒนาพื้นที่รกร้างเป็นสวนหย่อมและสนามเด็กเล่น", "โครงการสอนการบ้านน้องๆ ในชุมชนช่วงเย็น"], answer: "โครงการพัฒนาพื้นที่รกร้างเป็นสวนหย่อมและสนามเด็กเล่น" },
+            { question: "เพื่อแก้ปัญหาการกลั่นแกล้ง (Bullying) ในโรงเรียน ควรสร้างสรรค์กฎหรือกติกาใดขึ้นมาใช้ร่วมกัน", options: ["กฎ \"ลงโทษผู้กระทำผิดขั้นรุนแรง\"", "กติกา \"ห้องเรียนของเรา ปลอดภัยไร้การบูลลี่\" ที่ทุกคนร่วมกันตั้งขึ้น", "กฎ \"ห้ามพูดคุยกับเพื่อนที่เคยแกล้งคนอื่น\"", "กติกา \"ใครถูกแกล้งให้ไปฟ้องครูทันที\""], answer: "กติกา \"ห้องเรียนของเรา ปลอดภัยไร้การบูลลี่\" ที่ทุกคนร่วมกันตั้งขึ้น" },
+            { question: "หากต้องการนำเสนอข้อมูลเกี่ยวกับสิทธิเด็กให้เพื่อนๆ เข้าใจง่ายที่สุด ควรเลือกวิธีการใด", options: ["เขียนเรียงความความยาว 2 หน้ากระดาษ", "จัดทำ Infographic สรุปสิทธิ 4 ด้าน พร้อมภาพประกอบ", "อ่านอนุสัญญาว่าด้วยสิทธิเด็กให้เพื่อนฟัง", "จัดอภิปรายทางวิชาการโดยเชิญผู้เชี่ยวชาญมาบรรยาย"], answer: "จัดทำ Infographic สรุปสิทธิ 4 ด้าน พร้อมภาพประกอบ" },
+            { question: "ถ้าเปรียบเทียบประเทศเป็นบ้านหลังใหญ่ สมาชิกในบ้าน (พลเมือง) ควรมีข้อตกลงร่วมกันอย่างไรเพื่อให้บ้านน่าอยู่", options: ["ทุกคนต้องทำตามคำสั่งของพ่อแม่ (ผู้นำ) เท่านั้น", "แบ่งหน้าที่รับผิดชอบชัดเจน เคารพสิทธิซึ่งกันและกัน และช่วยกันดูแลรักษาบ้าน", "ต่างคนต่างอยู่ ไม่ก้าวก่ายเรื่องของกันและกัน", "คนที่แข็งแรงที่สุดมีอำนาจตัดสินใจทุกเรื่อง"], answer: "แบ่งหน้าที่รับผิดชอบชัดเจน เคารพสิทธิซึ่งกันและกัน และช่วยกันดูแลรักษาบ้าน" }
+        ];
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const infoForm = document.getElementById('info-form');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const saveScoreBtn = document.getElementById('save-score-btn');
+        
+        const questionNumberEl = document.getElementById('question-number');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const scoreEl = document.getElementById('score');
+        const finalScoreEl = document.getElementById('final-score');
+        const resultMessageEl = document.getElementById('result-message');
+        const progressBar = document.getElementById('progress-bar');
+        const studentInfoResultEl = document.getElementById('student-info-result');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = false;
+        let studentName = '';
+        let studentClass = '';
+        let studentNumber = '';
+
+        function startQuiz() {
+            studentName = document.getElementById('student-name').value;
+            studentClass = document.getElementById('student-class').value;
+            studentNumber = document.getElementById('student-number').value;
+
+            currentQuestionIndex = 0;
+            score = 0;
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            scoreEl.textContent = score;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            selectedAnswer = false;
+            nextBtn.classList.add('hidden');
+            const question = quizData[currentQuestionIndex];
+            questionNumberEl.textContent = currentQuestionIndex + 1;
+            questionTextEl.textContent = question.question;
+            optionsContainer.innerHTML = '';
+            
+            const optionLetters = ['ก', 'ข', 'ค', 'ง'];
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.innerHTML = `<span class="font-bold mr-2">${optionLetters[index]}.</span> ${option}`;
+                button.classList.add('quiz-option', 'w-full', 'p-4', 'border-2', 'border-gray-300', 'rounded-lg', 'text-left', 'transition-all', 'duration-300', 'bg-gray-50', 'hover:bg-blue-100', 'hover:border-blue-400');
+                button.addEventListener('click', () => selectAnswer(button, option));
+                optionsContainer.appendChild(button);
+            });
+
+            progressBar.style.width = `${((currentQuestionIndex + 1) / quizData.length) * 100}%`;
+        }
+        
+        function selectAnswer(button, selectedOption) {
+            if (selectedAnswer) return;
+            selectedAnswer = true;
+            
+            const correctAnswer = quizData[currentQuestionIndex].answer;
+            const allOptions = optionsContainer.querySelectorAll('.quiz-option');
+
+            if (selectedOption === correctAnswer) {
+                score++;
+                scoreEl.textContent = score;
+                button.classList.add('correct');
+            } else {
+                button.classList.add('incorrect');
+                allOptions.forEach(opt => {
+                    if (opt.textContent.includes(correctAnswer)) {
+                        opt.classList.add('correct');
+                    }
+                });
+            }
+
+            allOptions.forEach(opt => opt.disabled = true);
+            nextBtn.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            finalScoreEl.textContent = score;
+            studentInfoResultEl.innerHTML = `
+                <p><strong>ชื่อ:</strong> ${studentName}</p>
+                <p><strong>ห้อง:</strong> ${studentClass} <strong>เลขที่:</strong> ${studentNumber}</p>
+            `;
+            
+            let message = '';
+            const percentage = (score / quizData.length) * 100;
+            if (percentage >= 80) {
+                message = 'ยอดเยี่ยมมาก! คุณมีความเข้าใจในหน้าที่พลเมืองเป็นอย่างดี';
+                resultMessageEl.className = 'text-lg mt-4 font-semibold text-green-600';
+            } else if (percentage >= 50) {
+                message = 'ทำได้ดี! ลองทบทวนอีกนิดเพื่อความแม่นยำยิ่งขึ้นนะ';
+                 resultMessageEl.className = 'text-lg mt-4 font-semibold text-yellow-600';
+            } else {
+                message = 'ไม่เป็นไรนะ ลองพยายามใหม่อีกครั้ง!';
+                 resultMessageEl.className = 'text-lg mt-4 font-semibold text-red-600';
+            }
+            resultMessageEl.textContent = message;
+        }
+        
+        function goHome() {
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            document.getElementById('info-form').reset();
+            
+            const saveBtnText = document.getElementById('save-btn-text');
+            const saveLoader = document.getElementById('save-loader');
+            saveBtnText.innerHTML = 'บันทึกคะแนนลง Google Sheet';
+            saveLoader.classList.add('hidden');
+            saveScoreBtn.disabled = false;
+        }
+
+        function saveScoreToGoogleSheet() {
+            const saveBtnText = document.getElementById('save-btn-text');
+            const saveLoader = document.getElementById('save-loader');
+
+            if (!SCRIPT_URL) {
+                saveBtnText.textContent = 'ยังไม่ได้ตั้งค่า URL';
+                return;
+            }
+
+            saveBtnText.textContent = 'กำลังบันทึก...';
+            saveLoader.classList.remove('hidden');
+            saveScoreBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('name', studentName);
+            formData.append('class', studentClass);
+            formData.append('number', studentNumber);
+            formData.append('score', score);
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.result === 'success') {
+                    saveBtnText.textContent = 'บันทึกคะแนนเรียบร้อย!';
+                } else {
+                    throw new Error(data.message || 'เกิดข้อผิดพลาดในการบันทึก');
+                }
+            })
+            .catch(error => {
+                console.error('Error from script:', error);
+                saveBtnText.innerHTML = 'บันทึกไม่สำเร็จ! <br><small class="font-normal">โปรดตรวจสอบว่าชื่อชีตใน Google Sheet คือ "Sheet1"</small>';
+                saveScoreBtn.disabled = false;
+            })
+            .finally(() => {
+                saveLoader.classList.add('hidden');
+            });
+        }
+
+        infoForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            startQuiz();
+        });
+
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', goHome);
+        saveScoreBtn.addEventListener('click', saveScoreToGoogleSheet);
+
+    </script>
+</body>
+</html>
